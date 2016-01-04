@@ -1,11 +1,12 @@
 /*jslint node: true, indent: 2 */
 'use strict';
-var restify, bunyan, routes, log, server, nconf;
+var restify, bunyan, routes, log, server, nconf, fs;
 
 restify = require('restify');
 bunyan  = require('bunyan');
 routes  = require('./routes/');
 nconf   = require('nconf');
+fs      = require('fs');
 
 nconf.argv().env();
 
@@ -64,9 +65,9 @@ server = restify.createServer({
       return cb(null, JSON.stringify(body));
     }
   },
-  ca: nconf.get('tls_ca'),
-  cert: nconf.get('tls_cert'),
-  key: nconf.get('tls_key')
+  ca: fs.readFileSync(nconf.get('tls_ca')),
+  cert: fs.readFileSync(nconf.get('tls_cert')),
+  key: fs.readFileSync(nconf.get('tls_key'))
 });
 
 server.pre(function (req, res, next) {
