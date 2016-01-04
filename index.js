@@ -50,7 +50,10 @@ server = restify.createServer({
       res.setHeader('Cache-Control', 'must-revalidate');
 
       // Does the client *explicitly* accepts application/json?
-      var sendPlainText = (req.header('Accept').split(/, */).indexOf('application/json') === -1);
+      var sendPlainText = true;
+      if (req.header('Accept')) {
+          sendPlainText = (req.header('Accept').split(/, */).indexOf('application/json') === -1);
+      }
 
       // Send as plain text
       if (sendPlainText) {
@@ -107,5 +110,14 @@ var bind_port = nconf.get('bind_port') || 8080;
 
 server.listen(bind_port, bind_ip, function () {
   log.info('%s listening at %s', server.name, server.url);
+
+  var uid = parseInt(process.env.SUDO_UID);
+  if (uid) {
+    var gid = parseInt(process.env.SUDO_GID);
+
+    process.setgid(gid);
+    process.setuid(uid);
+    log.info('Dropping privileges: running as uid:%d guid:%d', process.getuid(), process.getgid());
+  }
 });
 
